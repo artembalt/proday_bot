@@ -1,0 +1,51 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:15
+    container_name: proday_pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: spartakproday
+      POSTGRES_USER: spartak
+      POSTGRES_PASSWORD: Tramp@info39
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    container_name: proday_redis
+    restart: unless-stopped
+    volumes:
+      - ./redisdata:/data
+    ports:
+      - "6379:6379"
+
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: proday_bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    command: ["sleep", "infinity"]
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: proday_backend
+    command: ["sleep", "infinity"]
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "8000:8000"
